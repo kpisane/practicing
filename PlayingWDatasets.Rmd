@@ -1,0 +1,78 @@
+---
+title: "Practicing with R Datasets"
+author: "K Pisane"
+date: "November 4, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(datasets)
+library(ggplot2)
+```
+
+```{r}
+data("economics")
+economics <- economics %>% 
+    mutate(days = as.numeric(difftime(date, date[1]), units = 'days'))
+
+
+
+g <- ggplot(economics)
+g + geom_histogram(aes(pce), binwidth = 1000) +
+    ggtitle("Personal Consumption Expenditures") +
+    xlab("Personal Consumption Expenditures (Billions)")
+```
+
+##Get an idea of the distribution of values
+
+```{r}
+g + geom_histogram(aes(psavert)) +
+    ggtitle("Personal Savings Rate") +
+    xlab("Personal Savings Rate")
+```
+
+```{r}
+g + geom_histogram(aes(unemploy)) +
+    ggtitle("Number of Unemployed") +
+    xlab("Number of Unemployed (Thousands)")
+```
+
+```{r}
+g + geom_histogram(aes(uempmed)) +
+    ggtitle("Median Duration of Unemployment") +
+    xlab("Median Duration of Unemployment (weeks)")
+```
+
+```{r}
+g + geom_histogram(aes(pop)) +
+    ggtitle("Total Population") +
+    xlab("Population (thousands)")
+```
+
+
+##Get an idea of how the values change with time
+
+```{r}
+p <- ggplot(economics_long)
+p + geom_point(aes(x = date, y = value, color = variable)) 
+#    coord_cartesian(ylim = c(0, 20e3))
+```
+
+Break out the trends for things of different scale: population, unemployment, others
+
+```{r}
+ggplot(filter(economics_long, variable == 'pop'), aes(x = date, y = value)) + 
+    geom_point(color = 'red') +
+    stat_smooth()
+#    geom_smooth(method = 'lm')
+    
+```
+
+```{r}
+fit_pop <- with(economics, lm(pop~days))
+plot(fit_pop$residuals)
+ggplot(fit_pop) + geom_line(aes(x = seq_along(fit_pop$residuals), y = fit_pop$residuals)) +
+    geom_hline(yintercept = 0, color = 'red')
+```
+
